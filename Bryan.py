@@ -116,8 +116,8 @@ def main():
         alpha = []
         probability = []
         chi_values = []
-        for i in range(60):
-            alpha.append(0.00129*np.exp(-i*0.02))
+        for i in range(20):
+            alpha.append(1000*np.exp(-i*0.1))
         ofile = open("alpha.txt", "a")
         for i in range(len(alpha)):
             ofile.write(str(alpha[i]) + "\n")

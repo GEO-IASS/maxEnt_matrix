@@ -1,10 +1,10 @@
 import numpy as np
 
 def K_real(omega_n, omega):
-    return -omega/(omega_n**2 + omega**2)
+    return -omega/(omega_n**2 + omega**2)*0.5/np.pi
 
 def K_imag(omega_n, omega):
-    return -omega_n/(omega_n**2 + omega**2)
+    return -omega_n/(omega_n**2 + omega**2)*0.5/np.pi
 
 def K_matrix_real(omega_n, omega):
     Niom = len(omega_n)
