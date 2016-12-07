@@ -4,6 +4,9 @@ import f
 import J
 import chi
 import entropy
+import newton
+import printFile
+import nan
 
 def readFiles(Greal, Gimag):
     import os
@@ -12,7 +15,6 @@ def readFiles(Greal, Gimag):
     import sys
 
     omega_n = []
-    G = []
     G_real = []
     G_imag = []
 
@@ -35,54 +37,11 @@ def readFiles(Greal, Gimag):
         G_imag.append(float(a[1]))
     ifile.close()
 
-    for i in range(len(G_real)):
-        G.append(G_real[i] + G_imag[i]*1j)
+    G_real = np.asarray(G_real)
+    G_imag = np.asarray(G_imag)
 
-    return omega_n, G
+    return omega_n, G_real, G_imag
 
-def diff(a, b):
-    import numpy as np
-    s = 0.0
-    for i in range(len(a)):
-        s = s + (a[i] - b[i])**2
-    return np.sqrt(s)
-
-def newton(alpha, G, omega_n, omega, A_initial, C_real_inv, C_imag_inv):
-    import numpy as np
-    import numpy.linalg
-
-    Nomega = len(omega)
-    Niom = len(omega_n)
-    Jacobian = np.zeros((Nomega, Nomega))
-    function = np.zeros(Nomega)
-    A_updated = np.zeros(Nomega)
-    iterationMax = 100
-    counter = 0
-
-    eps = 0.008
-    while(True):
-        counter = counter + 1 
-        if (counter > iterationMax):
-            break
-        for i in range(Nomega):
-            for j in range(Nomega):
-                Jacobian[i, j] = J.J(alpha, A_initial, i, j, omega_n, omega, C_real_inv, C_imag_inv)
-        for i in range(Nomega):
-            function[i] = f.f(alpha, G, A_initial, i, omega_n, omega, C_real_inv, C_imag_inv)
-        A_updated[:] = A_initial[:] - numpy.linalg.inv(Jacobian).dot(function)[:]
-        error = diff(A_initial, A_updated)
-        if (error < eps):
-            break
-        print "counter = ", counter, ", diff = ", error
-        A_initial[:] = A_updated[:]
-
-    return A_initial
-
-def printFile(x, y, fileName):
-    ofile = open(fileName, "w")
-    for i in range(len(x)):
-        ofile.write(str(x[i]) + "    " + str(y[i]) + "\n")
-    ofile.close()
 
 def main():
     import os
@@ -92,10 +51,10 @@ def main():
 
     Greal = "G_cc_real.txt"
     Gimag = "G_cc_imag.txt"
-    omega_n, G = readFiles(Greal, Gimag)
+    omega_n, G_real, G_imag = readFiles(Greal, Gimag)
     Niom = len(omega_n)
 
-    N = 40
+    N = 90
     omega_lower = -5
     omega_upper = -omega_lower
     domega = (omega_upper - omega_lower)/float(N)
@@ -107,7 +66,7 @@ def main():
     if (not os.path.exists("A_initial.txt")):
         for i in range(len(A_initial)):
             A_initial[i] = default.D(omega[i])
-        printFile(omega, A_initial, "A_initial.txt")
+        printFile.printFile(omega, A_initial, "A_initial.txt")
     else:
         omega = []
         A_initial = []
@@ -118,6 +77,7 @@ def main():
             A_initial.append(float(a[1]))
         ifile.close()
         Nomega = len(omega)
+        A_initial = np.asarray(A_initial)
 
     C_real = np.zeros((Niom, Niom))
     C_imag = np.zeros((Niom, Niom))
@@ -137,39 +97,45 @@ def main():
         colIndex = int(a[1])-1
         if (True):
             C_imag[rowIndex, colIndex] = float(a[2])
-    ifile.close()
+    ifile.close()           
     for i in range(Niom):
-        C_real[i, i] = 0.004**2
-        C_imag[i, i] = 0.004**2
+        C_real[i, i] = 0.01**2
+        C_imag[i, i] = 0.01**2
     C_real_inv = numpy.linalg.inv(C_real)
     C_imag_inv = numpy.linalg.inv(C_imag)
+    printFile.printMatrix(C_real_inv, "C_real_inv.txt")
+
+    if (False):
+        alpha = 1.0
+        function = f.f(alpha, G_real, G_imag, A_initial, omega_n, omega, C_real_inv, C_imag_inv)
+        Jacobian = J.J(alpha, A_initial, omega_n, omega, C_real_inv, C_imag_inv)
+        print function
+        printFile.printMatrix(Jacobian, "J.txt")
+        return 0
 
     if (True):
         alpha = []
-        probability = []
-        chi_values = []
-        for i in range(50):
-            alpha.append(1000*np.exp(-i*0.2))
+        for i in range(80):
+            alpha.append(0.012*np.exp(-i*0.02))
+
+        ofile = open("alpha.txt", "a")
         for i in range(len(alpha)):
             print "alpha = ", alpha[i]
-            A_updated = newton(alpha[i], G, omega_n, omega, A_initial, C_real_inv, C_imag_inv)
-            chi_values.append(chi.chi(G, A_updated, omega_n, omega, C_real_inv, C_imag_inv))
-            probability.append(numpy.exp(alpha[i]*entropy.entropy(omega, A_updated) - 0.5*chi.chi(G, A_updated, omega_n, omega, C_real_inv, C_imag_inv)))
-            printFile(omega, A_updated, "A_updated_alpha_" + str(alpha[i]) + ".txt")
-            os.system("cp A_updated_alpha_" + str(alpha[i]) + ".txt A_initial.txt")
-        printFile(alpha, chi_values, "chi_alpha.txt")
-        printFile(alpha, probability, "P_alpha.txt")
-        ofile = open("P_log_alpha.txt", "a")
-        for i in range(len(alpha)):
-            ofile.write(str(np.log(alpha[i])) + "    " + str(probability[i]) + "\n")
+            A_updated = newton.newton(alpha[i], G_real, G_imag, omega_n, omega, A_initial, C_real_inv, C_imag_inv)
+            if (nan.array_isnan(A_updated)):
+                break
+            output = "A_updated_alpha_" + str(alpha[i]) + ".txt"
+            printFile.printFile(omega, A_updated, output)
+            os.system("cp " +  output + " A_initial.txt")
+            ofile.write(str(alpha[i]) + "\n")
         ofile.close()
     else:
         alpha = 0.01
         print "alpha = ", alpha
         A_updated = newton(alpha, G, omega_n, omega, A_initial, C_real_inv, C_imag_inv)
-        printFile(omega, A_updated, "A_updated_alpha_" + str(alpha) + ".txt")
-        os.system("cp A_updated_alpha_" + str(alpha) + ".txt" + "A_initial.txt")
-        print chi.chi(G, A_updated, omega_n, omega, C_real_inv, C_imag_inv)
+        if (nan.array_isnan(A_updated)):
+            printFile.printFile(omega, A_updated, "A_updated_alpha_" + str(alpha) + ".txt")
+            os.system("cp A_updated_alpha_" + str(alpha) + ".txt" + "A_initial.txt")
     return 0
 
 main()

@@ -1,7 +1,7 @@
 import kernel
 import J
 import f
-
+import nan
 
 def diff(a, b):
     import numpy as np
@@ -25,7 +25,12 @@ def newton(alpha, G_real, G_imag, omega_n, omega, A_initial, C_real_inv, C_imag_
         counter = counter + 1
         if (counter > iterationMax):
             break
-        A_updated = A_initial - numpy.linalg.inv(J.J(alpha, A_initial, omega_n, omega, C_real_inv, C_imag_inv)).dot(f.f(alpha, G_real, G_imag, A_initial, omega_n, omega, C_real_inv, C_imag_inv))
+        function = f.f(alpha, G_real, G_imag, A_initial, omega_n, omega, C_real_inv, C_imag_inv)
+        Jacobian = J.J(alpha, A_initial, omega_n, omega, C_real_inv, C_imag_inv)
+        A_updated = A_initial - numpy.linalg.inv(Jacobian).dot(function)
+        if (nan.array_isnan(A_updated)):
+            A_initial = A_updated
+            break
         error = diff(A_initial, A_updated)
         if (error < eps):
             break
