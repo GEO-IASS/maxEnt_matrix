@@ -126,10 +126,6 @@ def main():
     for i in range(len(omega)):
         ofile.write(str(omega[i]) + "    " + str(spectral_mean[i]/s) + "\n")
     ofile.close()
-    ofile = open("bryan_2pi.txt", "w")
-    for i in range(len(omega)):
-        ofile.write(str(omega[i]) + "    " + str(spectral_mean[i]/(2*np.pi*s)) + "\n")
-    ofile.close()
     return 0
 
 main()
