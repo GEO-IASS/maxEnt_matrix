@@ -63,6 +63,10 @@ def main():
         omega[i] = omega_lower + i*domega
     Nomega = len(omega)
     A_initial = np.zeros(Nomega)
+    model = np.zeros(Nomega)
+    for i in range(Nomega):
+        model[i] = default.D(omega[i])
+    printFile.printFile(omega, model, "model.txt")
     if (not os.path.exists("A_initial.txt")):
         for i in range(len(A_initial)):
             A_initial[i] = default.D(omega[i])
@@ -116,7 +120,7 @@ def main():
     if (True):
         alpha = []
         for i in range(80):
-            alpha.append(0.012*np.exp(-i*0.02))
+            alpha.append(0.01*np.exp(-i*0.005))
 
         ofile = open("alpha.txt", "a")
         for i in range(len(alpha)):
