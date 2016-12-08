@@ -78,8 +78,8 @@ def main():
             C_imag[rowIndex, colIndex] = float(a[2])
     ifile.close()
     for i in range(Niom):
-        C_real[i, i] = 0.004**2
-        C_imag[i, i] = 0.004**2
+        C_real[i, i] = 0.01**2
+        C_imag[i, i] = 0.01**2
     C_real_inv = numpy.linalg.inv(C_real)
     C_imag_inv = numpy.linalg.inv(C_imag)
 

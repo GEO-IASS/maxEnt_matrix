@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import default
 import kernel
 import f
@@ -7,6 +9,18 @@ import entropy
 import newton
 import printFile
 import nan
+
+def read_spectral(fileName):
+    import numpy as np
+    omega = []
+    A = []
+    ifile = open(fileName, "r")
+    for index, string in enumerate(ifile):
+        a = string.split()
+        omega.append(float(a[0]))
+        A.append(float(a[1]))
+    ifile.close()
+    return omega, np.asarray(A)
 
 def readFiles(Greal, Gimag):
     import os
@@ -72,16 +86,8 @@ def main():
             A_initial[i] = default.D(omega[i])
         printFile.printFile(omega, A_initial, "A_initial.txt")
     else:
-        omega = []
-        A_initial = []
-        ifile = open("A_initial.txt", "r")
-        for index, string in enumerate(ifile):
-            a = string.split()
-            omega.append(float(a[0]))
-            A_initial.append(float(a[1]))
-        ifile.close()
+        omega, A_initial = read_spectral("A_initial.txt")
         Nomega = len(omega)
-        A_initial = np.asarray(A_initial)
 
     C_real = np.zeros((Niom, Niom))
     C_imag = np.zeros((Niom, Niom))
@@ -119,19 +125,20 @@ def main():
 
     if (True):
         alpha = []
-        for i in range(80):
-            alpha.append(0.01*np.exp(-i*0.005))
+        for i in range(30):
+            alpha.append(1000*np.exp(-i*0.1))
 
         ofile = open("alpha.txt", "a")
         for i in range(len(alpha)):
-            print "alpha = ", alpha[i]
             A_updated = newton.newton(alpha[i], G_real, G_imag, omega_n, omega, A_initial, C_real_inv, C_imag_inv)
             if (nan.array_isnan(A_updated)):
-                break
+                omega, A_initial = read_spectral("A_initial.txt")
+                continue
             output = "A_updated_alpha_" + str(alpha[i]) + ".txt"
             printFile.printFile(omega, A_updated, output)
             os.system("cp " +  output + " A_initial.txt")
             ofile.write(str(alpha[i]) + "\n")
+            print "alpha = ", alpha[i]
         ofile.close()
     else:
         alpha = 0.01

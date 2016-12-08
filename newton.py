@@ -17,7 +17,7 @@ def newton(alpha, G_real, G_imag, omega_n, omega, A_initial, C_real_inv, C_imag_
     Nomega = len(omega)
     Niom = len(omega_n)
     
-    iterationMax = 100
+    iterationMax = 20
     counter = 0
     
     eps = 0.00001
