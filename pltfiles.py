@@ -7,6 +7,7 @@ def readFile(fileName):
     x = []
     y = []
     for (index, string) in enumerate(ifile):
+        string = string.replace(",", " ")
         a = string.split()
         x.append(float(a[0]))
         y.append(float(a[1]))

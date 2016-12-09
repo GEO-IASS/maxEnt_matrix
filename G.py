@@ -6,6 +6,7 @@ def readA(fileName):
     A = []
     ifile = open(fileName, "r")
     for i, string in enumerate(ifile):
+        string = string.replace(",", " ")
         a = string.split()
         omega.append(float(a[0]))
         A.append(float(a[1]))

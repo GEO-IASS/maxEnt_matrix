@@ -27,11 +27,11 @@ def readFiles(Greal, Gimag):
     import sys
     import numpy as np
     import sys
-
+    
     omega_n = []
     G_real = []
     G_imag = []
-
+    
     try:
         ifile = open(Greal, "r")
     except:
@@ -53,7 +53,7 @@ def readFiles(Greal, Gimag):
 
     G_real = np.asarray(G_real)
     G_imag = np.asarray(G_imag)
-
+    
     return omega_n, G_real, G_imag
 
 
@@ -63,11 +63,21 @@ def main():
     import numpy as np
     import numpy.linalg
 
+    if (len(sys.argv) == 1):
+        print "a0 = sys.argv[1], b0 = sys.argv[2]. alpha = a0*exp(-i*b0). "
+        return -1
+    if (len(sys.argv) == 2):
+        a0 = float(sys.argv[1])
+        b0 = 0.05
+    if (len(sys.argv) == 3):
+        a0 = float(sys.argv[1])
+        b0 = float(sys.argv[2])
+    
     Greal = "G_cc_real.txt"
     Gimag = "G_cc_imag.txt"
     omega_n, G_real, G_imag = readFiles(Greal, Gimag)
     Niom = len(omega_n)
-
+    
     N = 90
     omega_lower = -5
     omega_upper = -omega_lower
@@ -88,7 +98,7 @@ def main():
     else:
         omega, A_initial = read_spectral("A_initial.txt")
         Nomega = len(omega)
-
+    
     C_real = np.zeros((Niom, Niom))
     C_imag = np.zeros((Niom, Niom))
 
@@ -107,27 +117,20 @@ def main():
         colIndex = int(a[1])-1
         if (True):
             C_imag[rowIndex, colIndex] = float(a[2])
-    ifile.close()           
+    ifile.close()
+    eig = 0.005
     for i in range(Niom):
-        C_real[i, i] = 0.01**2
-        C_imag[i, i] = 0.01**2
+        C_real[i, i] = eig**2
+        C_imag[i, i] = eig**2
     C_real_inv = numpy.linalg.inv(C_real)
     C_imag_inv = numpy.linalg.inv(C_imag)
     printFile.printMatrix(C_real_inv, "C_real_inv.txt")
 
-    if (False):
-        alpha = 1.0
-        function = f.f(alpha, G_real, G_imag, A_initial, omega_n, omega, C_real_inv, C_imag_inv)
-        Jacobian = J.J(alpha, A_initial, omega_n, omega, C_real_inv, C_imag_inv)
-        print function
-        printFile.printMatrix(Jacobian, "J.txt")
-        return 0
-
     if (True):
         alpha = []
         for i in range(30):
-            alpha.append(1000*np.exp(-i*0.1))
-
+            alpha.append(a0*np.exp(-i*b0))
+        
         ofile = open("alpha.txt", "a")
         for i in range(len(alpha)):
             A_updated = newton.newton(alpha[i], G_real, G_imag, omega_n, omega, A_initial, C_real_inv, C_imag_inv)
