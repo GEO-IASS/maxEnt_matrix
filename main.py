@@ -78,8 +78,8 @@ def main():
     omega_n, G_real, G_imag = readFiles(Greal, Gimag)
     Niom = len(omega_n)
     
-    N = 90
-    omega_lower = -5
+    N = 101
+    omega_lower = -8
     omega_upper = -omega_lower
     domega = (omega_upper - omega_lower)/float(N)
     omega = np.zeros(N+1)
@@ -118,13 +118,24 @@ def main():
         if (True):
             C_imag[rowIndex, colIndex] = float(a[2])
     ifile.close()
-    eig = 0.005
+    eig = 0.01
+    ofile = open("eig.txt", "w")
+    ofile.write(str(eig) + "\n")
+    ofile.close()
     for i in range(Niom):
         C_real[i, i] = eig**2
         C_imag[i, i] = eig**2
     C_real_inv = numpy.linalg.inv(C_real)
     C_imag_inv = numpy.linalg.inv(C_imag)
     printFile.printMatrix(C_real_inv, "C_real_inv.txt")
+    
+    if (False):
+        alpha = 1.0
+        function = f.f(alpha, G_real, G_imag, A_initial, omega_n, omega, C_real_inv, C_imag_inv)
+        Jacobian = J.J(alpha, A_initial, omega_n, omega, C_real_inv, C_imag_inv)
+        print function
+        printFile.printMatrix(Jacobian, "J.txt")
+        return 0
 
     if (True):
         alpha = []
@@ -142,6 +153,7 @@ def main():
             os.system("cp " +  output + " A_initial.txt")
             ofile.write(str(alpha[i]) + "\n")
             print "alpha = ", alpha[i]
+            A_initial = A_updated
         ofile.close()
     else:
         alpha = 0.01

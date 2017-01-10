@@ -61,11 +61,13 @@ def main():
                 ymin = min_temp
             if (ymax < max_temp):
                 ymax = max_temp
-        
-        ymin = ymin - 0.1
-        ymax = ymax + 0.1
-        xmin = xmin - 0.1
-        xmax = xmax + 0.1
+
+        xdiff = xmax - xmin
+        ydiff = ymax - ymin
+        ymin = ymin - 0.1*ydiff
+        ymax = ymax + 0.1*ydiff
+        xmin = xmin - 0.05*xdiff
+        xmax = xmax + 0.05*xdiff
 
         if (len(xLists) == 1):
             plt.plot(xLists[0], yLists[0], colors[0])

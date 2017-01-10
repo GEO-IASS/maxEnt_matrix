@@ -77,9 +77,12 @@ def main():
         if (True):
             C_imag[rowIndex, colIndex] = float(a[2])
     ifile.close()
+    ifile = open("eig.txt", "r")
+    eig = float(ifile.readline())
+    ifile.close()
     for i in range(Niom):
-        C_real[i, i] = 0.005**2
-        C_imag[i, i] = 0.005**2
+        C_real[i, i] = eig**2
+        C_imag[i, i] = eig**2
     C_real_inv = numpy.linalg.inv(C_real)
     C_imag_inv = numpy.linalg.inv(C_imag)
 
